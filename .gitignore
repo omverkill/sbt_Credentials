@@ -1,0 +1,41 @@
+# Dependencies
+node_modules/
+
+# Environment Variables
+.env
+.env.local
+
+# Hardhat artifacts & cache
+contracts/artifacts/
+contracts/cache/
+contracts/typechain-types/
+contracts/coverage/
+contracts/coverage.json
+contracts/slither_run.txt
+
+# Vite / Frontend build artifacts
+frontend/dist/
+frontend/build/
+
+# Backend mock files
+backend/mock_ipfs.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+contracts/compile_output.txt
+contracts/err.log
+contracts/err2.txt
+contracts/err3.txt
+
+# OS metadata
+.DS_Store
+Thumbs.db

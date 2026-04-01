@@ -1,0 +1,181 @@
+# Soulbound Token Academic Credentialing System — Implementation Plan
+
+A three-tier dApp for issuing, managing, and verifying non-transferable academic credentials (Soulbound Tokens) on an EVM-compatible blockchain.
+
+## Proposed Changes
+
+### Project Structure
+
+```
+finalpro/
+├── contracts/                 # Tier 1 — Solidity smart contracts
+│   ├── contracts/
+│   │   └── SoulboundToken.sol
+│   ├── scripts/
+│   │   └── deploy.js
+│   ├── test/
+│   │   └── SoulboundToken.test.js
+│   ├── hardhat.config.js
+│   └── package.json
+├── backend/                   # Tier 2 — Node.js admin API
+│   ├── server.js
+│   ├── routes/
+│   │   └── credentials.js
+│   ├── middleware/
+│   │   └── auth.js
+│   ├── config/
+│   │   └── contract.js
+│   ├── .env.example
+│   └── package.json
+├── frontend/                  # Tier 3 — React verification portal
+│   ├── src/
+│   │   ├── main.jsx
+│   │   ├── App.jsx
+│   │   ├── index.css
+│   │   ├── pages/
+│   │   │   ├── VerifyCredential.jsx
+│   │   │   └── AdminDashboard.jsx
+│   │   ├── components/
+│   │   │   ├── Navbar.jsx
+│   │   │   ├── CredentialCard.jsx
+│   │   │   ├── IssueForm.jsx
+│   │   │   └── Footer.jsx
+│   │   └── utils/
+│   │       └── contract.js
+│   ├── index.html
+│   ├── vite.config.js
+│   └── package.json
+└── structured_abstract.txt
+```
+
+---
+
+### Tier 1 — Smart Contract (`contracts/`)
+
+#### [NEW] [SoulboundToken.sol](file:///c:/Users/Haroon/AWT/finalpro/contracts/contracts/SoulboundToken.sol)
+
+ERC-721-based Soulbound Token contract with:
+- **Minting**: Only contract owner (university) can mint SBTs to a holder's wallet
+- **Transfer disabled**: `_update` overridden to block all transfers after minting
+- **Credential metadata**: Stores on-chain data (student name, degree, institution, issue date, IPFS hash for extended data)
+- **Revocation**: Owner can revoke a credential (marks it invalid on-chain)
+- **Re-issuance**: Owner can re-issue to same holder after revocation (key-loss recovery)
+- **Verification**: Public `verifyCredential(tokenId)` returns credential state + data
+
+#### [NEW] [deploy.js](file:///c:/Users/Haroon/AWT/finalpro/contracts/scripts/deploy.js)
+
+Hardhat deployment script targeting local Hardhat node or testnets.
+
+#### [NEW] [SoulboundToken.test.js](file:///c:/Users/Haroon/AWT/finalpro/contracts/test/SoulboundToken.test.js)
+
+Comprehensive tests:
+- Minting creates a token bound to the correct address
+- Transfers are blocked (revert on `transferFrom`, `safeTransferFrom`)
+- Only owner can mint, revoke, re-issue
+- Revoked credentials are marked invalid
+- Re-issuance works after revocation
+- Verification returns correct data
+
+#### [NEW] [hardhat.config.js](file:///c:/Users/Haroon/AWT/finalpro/contracts/hardhat.config.js)
+
+Hardhat configuration with Solidity 0.8.20, local network, and optional testnet config.
+
+---
+
+### Tier 2 — Node.js Backend (`backend/`)
+
+#### [NEW] [server.js](file:///c:/Users/Haroon/AWT/finalpro/backend/server.js)
+
+Express server with CORS, JSON parsing. Connects to blockchain via ethers.js.
+
+#### [NEW] [credentials.js](file:///c:/Users/Haroon/AWT/finalpro/backend/routes/credentials.js)
+
+REST API endpoints:
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/credentials/issue` | Issue new SBT credential |
+| POST | `/api/credentials/revoke/:tokenId` | Revoke a credential |
+| POST | `/api/credentials/reissue/:tokenId` | Re-issue a revoked credential |
+| GET | `/api/credentials/verify/:tokenId` | Verify credential status |
+| GET | `/api/credentials/holder/:address` | Get all credentials for a wallet |
+| GET | `/api/credentials/all` | List all issued credentials |
+
+#### [NEW] [auth.js](file:///c:/Users/Haroon/AWT/finalpro/backend/middleware/auth.js)
+
+Simple API key-based admin authentication middleware.
+
+#### [NEW] [contract.js](file:///c:/Users/Haroon/AWT/finalpro/backend/config/contract.js)
+
+Contract ABI loader and ethers.js contract instance factory.
+
+---
+
+### Tier 3 — React Frontend (`frontend/`)
+
+#### [NEW] Vite + React app
+
+Created via `npx create-vite@latest ./ --template react`.
+
+#### [NEW] [VerifyCredential.jsx](file:///c:/Users/Haroon/AWT/finalpro/frontend/src/pages/VerifyCredential.jsx)
+
+Public employer verification portal:
+- Search by Token ID or wallet address
+- Display credential card with status (Valid ✅ / Revoked ❌)
+- Shows student name, degree, institution, issue date
+- No blockchain knowledge required from the user
+
+#### [NEW] [AdminDashboard.jsx](file:///c:/Users/Haroon/AWT/finalpro/frontend/src/pages/AdminDashboard.jsx)
+
+University admin panel:
+- Issue new credentials (form with student details + wallet address)
+- View all issued credentials in a table
+- Revoke / Re-issue controls per credential
+- Requires API key authentication
+
+#### [NEW] UI Components
+
+- `Navbar.jsx` — Navigation with role-based links
+- `CredentialCard.jsx` — Stylized credential display card
+- `IssueForm.jsx` — Form for issuing new credentials
+- `Footer.jsx` — Site footer
+
+#### [NEW] [index.css](file:///c:/Users/Haroon/AWT/finalpro/frontend/src/index.css)
+
+Premium design system:
+- Dark theme with gradient accents (deep blue → purple)
+- Glassmorphism cards
+- Google Fonts (Inter)
+- Micro-animations (hover effects, transitions)
+- Responsive layout
+
+---
+
+## User Review Required
+
+> [!IMPORTANT]
+> **Blockchain network**: The project will be set up for a **local Hardhat node** by default. To deploy to a real testnet (Sepolia, Mumbai, etc.), you'll need to add RPC URLs and funded wallets to the `.env` file. Should I configure for a specific testnet?
+
+> [!IMPORTANT]
+> **No MetaMask/wallet integration on frontend**: The frontend connects to the blockchain via the Node.js backend API (read-only for verifiers). The admin dashboard uses API key auth, not wallet signing. This keeps it simple for employers. Is this approach acceptable?
+
+---
+
+## Verification Plan
+
+### Automated Tests
+
+**Smart contract tests** (most critical):
+```bash
+cd c:\Users\Haroon\AWT\finalpro\contracts
+npx hardhat test
+```
+Tests will verify: minting, transfer blocking, revocation, re-issuance, access control, and verification reads.
+
+### Manual Verification
+
+1. **Start local blockchain**: `npx hardhat node` in `contracts/`
+2. **Deploy contract**: `npx hardhat run scripts/deploy.js --network localhost`
+3. **Start backend**: `npm start` in `backend/` (connects to local chain)
+4. **Start frontend**: `npm run dev` in `frontend/`
+5. **Browser test**: Open the React app, verify the UI renders, issue a credential via admin dashboard, then verify it via the verification portal
+6. **I will use the browser tool** to visually verify the frontend UI looks premium and all pages work correctly

@@ -1,0 +1,126 @@
+STRUCTURED PROJECT ABSTRACT: SOULBOUND TOKEN ACADEMIC CREDENTIALING SYSTEM
+================================================================================
+
+
+1. PROBLEM STATEMENT
+--------------------
+
+Domain: Academic credential management
+
+Current system failures (enumerated):
+  - Centralized databases → single point of failure; vulnerable to data loss
+  - Physical documents → susceptible to physical forgery
+  - Third-party verification → inefficient; slow; costly
+
+Naive solution and its flaw:
+  - Candidate solution: Non-fungible tokens (NFTs) on a blockchain
+  - Logical flaw: NFTs are transferable by design; academic degrees are
+    non-transferable by definition. A degree cannot be bought, sold, or
+    reassigned. Therefore, standard NFTs are semantically incorrect for
+    this domain.
+
+
+2. PROPOSED SOLUTION
+--------------------
+
+Token type: Soulbound Token (SBT)
+
+Definition of SBT:
+  A cryptographically enforced, non-transferable digital asset on a blockchain.
+  Transfer operations are disabled at the smart contract level, not just by
+  convention.
+
+Core claim:
+  SBTs are semantically aligned with academic credentials — both are permanently
+  bound to a specific individual and cannot be transferred.
+
+
+3. SYSTEM ARCHITECTURE
+----------------------
+
+Architecture pattern: Three-tier decentralized application (dApp)
+
+  Tier | Technology                  | Role
+  -----|-----------------------------|-----------------------------------------
+  1    | EVM-compatible smart contract| SBT issuance; on-chain state management
+  2    | Node.js backend             | Administrative interface for the issuing
+       |                             | institution
+  3    | React frontend              | Public-facing employer verification portal
+
+Key actors:
+  - ISSUER   : University / academic institution (controls issuance and revocation)
+  - HOLDER   : Graduate (credential is bound to their wallet address)
+  - VERIFIER : Employer or third party (reads credential state from chain)
+
+
+4. CRITICAL ASSUMPTIONS CHALLENGED
+-----------------------------------
+
+Assumption being rejected:
+  "Blockchain inherently guarantees authenticity."
+
+Corrected model:
+  - Blockchain guarantees  : immutability of recorded data
+  - Blockchain does NOT    : guarantee factual accuracy of input data
+  - Implication            : A blockchain can immutably record a false credential
+                             if the issuer submits false data.
+
+Trust anchor: Traditional Public Key Infrastructure (PKI)
+  - The system derives cryptographic trust from PKI, not from the blockchain alone.
+  - The issuing institution's PKI key pair is the root of trust; the blockchain is
+    the tamper-proof ledger for records signed by that key.
+
+
+5. DESIGN DECISIONS AND TRADE-OFFS
+------------------------------------
+
+  Decision             | Chosen approach              | Rejected alternative          | Reason
+  ---------------------|------------------------------|-------------------------------|-----------------------------
+  Revocation           | Centralized; university-      | Decentralized community       | Practical: institutions need
+                       | controlled                   | governance                    | control; user key-loss is a
+                       |                              |                               | real failure mode
+  Re-issuance          | Permitted by university      | Immutable; no re-issuance     | Accommodates key-loss
+                       |                              |                               | recovery; prioritizes utility
+                       |                              |                               | over Web3 purity
+  Decentralization     | Partial (blockchain ledger + | Full Web3 decentralization    | Aligns with real-world
+  level                | centralized admin)           |                               | institutional requirements
+
+Explicit trade-off acknowledged:
+  This system sacrifices strict Web3 decentralization principles in exchange for
+  practical institutional utility and user error recovery.
+
+
+6. SYSTEM PROPERTIES (OUTPUT CLAIMS)
+--------------------------------------
+
+The system is claimed to provide:
+
+  VERIFIABLE    : Credential state is publicly readable on-chain
+  TAMPER-PROOF  : Recorded data is immutable on the blockchain
+  ACCESSIBLE    : React frontend requires no blockchain knowledge from verifiers
+  INSTITUTION-  : Revocation/re-issuance controls match existing academic
+  ALIGNED         governance models
+
+
+================================================================================
+NOTE ON RESTRUCTURING RATIONALE
+================================================================================
+
+The original abstract was written for a human reader who can infer implicit
+context and tolerate ambiguity. This restructured version makes five things
+explicit that were previously buried in prose:
+
+  1. Typed entities    — actors, technologies, and layers are distinct
+                         categories, not a single narrative
+  2. Named relationships — "X controls Y", "X signs Z" rather than
+                           "the university manages the system"
+  3. Explicit rejections — what was considered and why it was ruled out
+                           (NFTs, full decentralization)
+  4. Separated properties from claims — what the system IS vs. what it is
+                                        CLAIMED to do
+  5. Quantified trade-offs — each design decision has a named alternative
+                              and a reason for rejection
+
+An AI processing this for tasks like code generation, evaluation, or Q&A will
+find unambiguous anchors for every concept.
+================================================================================
